@@ -1,0 +1,151 @@
+name: Actions Feature Demo
+
+on:
+  workflow_dispatch:
+    inputs:
+      required_job_should_pass:
+        description: "If false, the required gate job fails intentionally"
+        type: boolean
+        required: true
+        default: true
+      sleep_seconds:
+        description: "How long each step should sleep"
+        type: string
+        required: true
+        default: "5"
+      demo_message:
+        description: "Arbitrary message passed across jobs"
+        type: string
+        required: true
+        default: "Hello from workflow_dispatch"
+      os_matrix_json:
+        description: "JSON array of runner labels for the matrix (e.g. [\"ubuntu-latest\",\"macos-latest\"])"
+        type: string
+        required: true
+        default: "[\"ubuntu-latest\",\"macos-latest\"]"
+      python_matrix_json:
+        description: "JSON array of Python versions for the matrix (e.g. [\"3.10\",\"3.11\"])"
+        type: string
+        required: true
+        default: "[\"3.10\",\"3.11\"]"
+
+jobs:
+  prep:
+    name: Prep (capture inputs -> outputs)
+    runs-on: ubuntu-latest
+    outputs:
+      required_job_should_pass: ${{ steps.export.outputs.required_job_should_pass }}
+      sleep_seconds: ${{ steps.export.outputs.sleep_seconds }}
+      demo_message: ${{ steps.export.outputs.demo_message }}
+      os_matrix_json: ${{ steps.export.outputs.os_matrix_json }}
+      python_matrix_json: ${{ steps.export.outputs.python_matrix_json }}
+    steps:
+      - name: Show workflow_dispatch inputs
+        shell: bash
+        run: |
+          echo "required_job_should_pass=${{ inputs.required_job_should_pass }}"
+          echo "sleep_seconds=${{ inputs.sleep_seconds }}"
+          echo "demo_message=${{ inputs.demo_message }}"
+          echo "os_matrix_json=${{ inputs.os_matrix_json }}"
+          echo "python_matrix_json=${{ inputs.python_matrix_json }}"
+
+      - name: Export inputs as job outputs
+        id: export
+        shell: bash
+        run: |
+          echo "required_job_should_pass=${{ inputs.required_job_should_pass }}" >> "$GITHUB_OUTPUT"
+          echo "sleep_seconds=${{ inputs.sleep_seconds }}" >> "$GITHUB_OUTPUT"
+          echo "demo_message=${{ inputs.demo_message }}" >> "$GITHUB_OUTPUT"
+          echo "os_matrix_json=${{ inputs.os_matrix_json }}" >> "$GITHUB_OUTPUT"
+          echo "python_matrix_json=${{ inputs.python_matrix_json }}" >> "$GITHUB_OUTPUT"
+
+      - name: Dummy work (sleep)
+        run: sleep "${{ inputs.sleep_seconds }}"
+
+  side_quest:
+    name: Side quest (runs in parallel)
+    runs-on: ubuntu-latest
+    needs: prep
+    steps:
+      - name: Sleep (parallel with required gate)
+        run: sleep "${{ needs.prep.outputs.sleep_seconds }}"
+
+      - name: Echo message from prep outputs
+        run: echo "Message from prep: ${{ needs.prep.outputs.demo_message }}"
+
+  required_gate:
+    name: Required gate (needs prep)
+    runs-on: ubuntu-latest
+    needs: prep
+    outputs:
+      gate_status: ${{ steps.gate.outputs.gate_status }}
+    steps:
+      - name: Decide whether to pass/fail
+        id: gate
+        shell: bash
+        run: |
+          echo "required_job_should_pass=${{ needs.prep.outputs.required_job_should_pass }}"
+
+          if [[ "${{ needs.prep.outputs.required_job_should_pass }}" != "true" ]]; then
+            echo "gate_status=failed" >> "$GITHUB_OUTPUT"
+            echo "Failing intentionally because required_job_should_pass=false"
+            exit 1
+          fi
+
+          echo "gate_status=passed" >> "$GITHUB_OUTPUT"
+          echo "Passing gate job"
+
+      - name: Dummy work (sleep)
+        run: sleep "${{ needs.prep.outputs.sleep_seconds }}"
+
+  matrix_work:
+    name: Matrix work (${{ matrix.os }} / py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    needs:
+      - prep
+      - required_gate
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ fromJSON(needs.prep.outputs.os_matrix_json) }}
+        python: ${{ fromJSON(needs.prep.outputs.python_matrix_json) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Run Python demo script
+        shell: bash
+        run: |
+          python scripts/actions_demo.py \
+            --sleep "${{ needs.prep.outputs.sleep_seconds }}" \
+            --message "${{ needs.prep.outputs.demo_message }}" \
+            --matrix-os "${{ matrix.os }}" \
+            --python "${{ matrix.python }}"
+
+      - name: Dummy work (sleep)
+        run: sleep "${{ needs.prep.outputs.sleep_seconds }}"
+
+  summary:
+    name: Summary (consume outputs)
+    runs-on: ubuntu-latest
+    needs:
+      - prep
+      - side_quest
+      - required_gate
+      - matrix_work
+    if: ${{ always() }}
+    steps:
+      - name: Show upstream results and outputs
+        shell: bash
+        run: |
+          echo "required_gate result: ${{ needs.required_gate.result }}"
+          echo "required_gate output gate_status: ${{ needs.required_gate.outputs.gate_status }}"
+          echo "demo_message from prep output: ${{ needs.prep.outputs.demo_message }}"
+          echo "matrix_work result: ${{ needs.matrix_work.result }}"
+
+      - name: Dummy work (sleep)
+        run: sleep "${{ needs.prep.outputs.sleep_seconds }}"
