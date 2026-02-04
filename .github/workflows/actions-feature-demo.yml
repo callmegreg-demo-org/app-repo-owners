@@ -71,7 +71,7 @@ jobs:
         run: sleep "${{ needs.prep.outputs.sleep_seconds }}"
 
       - name: Echo message from prep outputs
-        run: echo "Message from prep: ${{ needs.prep.outputs.demo_message }}"
+        run: echo "Message from prep -- ${{ needs.prep.outputs.demo_message }}"
 
   required_gate:
     name: Required gate (needs prep)
