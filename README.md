@@ -29,6 +29,9 @@ File: [.github/workflows/actions-feature-demo.yml](.github/workflows/actions-fea
 **Job 5 (`summary`)**:
 - Always runs, regardless of prior job success/failure.
 
+<img width="1916" height="626" alt="Screenshot 2026-02-05 at 11 57 22 AM" src="https://github.com/user-attachments/assets/7d562737-2a61-45fb-a392-62a1846e570b" />
+
+
 ### Dependency Security Testing (reusable workflow caller)
 
 File: [.github/workflows/caller-workflow.yml](.github/workflows/caller-workflow.yml)
