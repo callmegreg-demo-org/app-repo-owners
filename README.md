@@ -6,15 +6,28 @@ This repo includes a couple of workflow files under [.github/workflows](.github/
 
 File: [.github/workflows/actions-feature-demo.yml](.github/workflows/actions-feature-demo.yml)
 
-Scenario coverage:
+**Workflow trigger**:
 - Manually triggered workflow via `workflow_dispatch` with input parameters.
-- Passing values between jobs using outputs (`prep` → downstream jobs).
-- Parallel job execution (`side_quest` runs alongside `required_gate`).
-- Required gate job that can intentionally fail based on input it receives from a previous job.
-- Matrix strategy job to test multiple Python versions in parallel.
-- Running a Python script stored in the repo.
-- Running an inline Python script using the `python` shell.
-- A summary job that always runs, regardless of prior job success/failure.
+
+**Job 1 (`Prep`)**:
+- Prepares output values to be consumed by downstream jobs.
+
+**Job 2 (`required_gate`)**:
+- Depends on the `prep` job.
+- A job that can fail based on input it receives from a previous job.
+
+**Job 3 (`side_quest`)**:
+- Also depends on the `prep` job.
+- Runs in parallel to the `required_gate` job.
+
+**Job 4 (`matrix_work`)**:
+- Skip this job if the PR is a draft.
+- Uses a matrix strategy to test the same job steps with multiple Python versions in parallel.
+- Runs a Python script stored in the repo.
+- Runs an inline Python script using the `python` shell.
+
+**Job 5 (`summary`)**:
+- Always runs, regardless of prior job success/failure.
 
 ### Dependency Security Testing (reusable workflow caller)
 
