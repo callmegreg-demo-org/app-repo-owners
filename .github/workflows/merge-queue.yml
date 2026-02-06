@@ -44,12 +44,20 @@ jobs:
           fetch-depth: 2
       - name: Get commit message
         id: get_commit_message
-        run: echo "commit_message=$(git log --format=%s --no-merges -1)" >> $GITHUB_OUTPUT
-      - id: random
-        run: echo "number=$(( ( RANDOM % 50 )  + 10 ))" >> $GITHUB_OUTPUT
-      - name: 😴 sleep ${{ steps.random.outputs.number }}s
-        if: github.event_name == 'pull_request'
-        run: sleep ${{ steps.random.outputs.number }}
+        run: |
+          echo "=== Git log (all, max 5) ==="
+          git log --oneline -5 || true
+          echo "=== Git log (no-merges, max 5) ==="
+          git log --oneline --no-merges -5 || true
+          COMMIT_MSG=$(git log --format=%s --no-merges -1)
+          echo "=== Extracted commit message ==="
+          echo "$COMMIT_MSG"
+          echo "commit_message=$COMMIT_MSG" >> $GITHUB_OUTPUT
+      # - id: random
+      #   run: echo "number=$(( ( RANDOM % 50 )  + 10 ))" >> $GITHUB_OUTPUT
+      # - name: 😴 sleep ${{ steps.random.outputs.number }}s
+      #   if: github.event_name == 'pull_request'
+      #   run: sleep ${{ steps.random.outputs.number }}
       - name: 😴 sleep 10 minutes (slow PR)
         if: ${{ github.event_name == 'merge_group' && contains(steps.get_commit_message.outputs.commit_message, 'slow') }}
         run: |

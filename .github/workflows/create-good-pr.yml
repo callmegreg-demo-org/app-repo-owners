@@ -37,6 +37,6 @@ jobs:
     - id: create-pr
       uses: austenstone/merge-queue-demo/.github/actions/create-pr@main
       with:
-        file_name: ${{ matrix.file_name }}
+        file_name: files/${{ matrix.file_name }}
         file_content: ${{ matrix.file_content }}
         token: ${{ secrets.PR_PAT }}
