@@ -69,7 +69,7 @@ The **CI** workflow (`merge-queue.yml`) reads the HEAD commit message of the PR 
 1. **Enable the merge queue** on the `main` branch:
    - Go to **Settings → Rules → Rulesets** (or Branch protection rules).
    - Create or edit a ruleset/branch protection rule for `main`.
-   - Enable **Require merge queue** and set the **CI / Build** job as a required status check.
+   - Enable **Require merge queue** and set **Build** job as a required status check.
    - Optionally configure the merge method (squash, merge, rebase) and queue limits.
 
 2. **Create a Personal Access Token (PAT)**:
@@ -103,4 +103,5 @@ Run the three `workflow_dispatch` workflows **in order**, with `count: 1` for ea
 | 2nd | Good (slow) | 😴 Sleeps for 10 minutes, then ✅ passes and merges into `main`. |
 | 3rd | Bad (fail) | ❌ Fails the CI check and is **removed from the queue**. The PR remains open. |
 
+> [!NOTE]
 > **Key takeaway**: The merge queue tests each PR against the accumulated base (main + previously queued PRs). When a PR fails, it is ejected from the queue without blocking PRs ahead of it. PRs behind the failed PR may be re-tested.
