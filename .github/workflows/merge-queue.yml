@@ -41,13 +41,24 @@ jobs:
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event_name == 'merge_group' && github.event.merge_group.head_sha || github.event.pull_request.head.sha }}
-      - id: get_commit_message
-        run: echo ${{ github.event.pull_request.commits[0].message }} "commit_message=$(git show -s --format=%s)" >> $GITHUB_OUTPUT
+      - name: Get commit message
+        id: get_commit_message
+        run: echo "commit_message=$(git show -s --format=%s)" >> $GITHUB_OUTPUT
       - id: random
         run: echo "number=$(( ( RANDOM % 50 )  + 10 ))" >> $GITHUB_OUTPUT
       - name: 😴 sleep ${{ steps.random.outputs.number }}s
         if: github.event_name == 'pull_request'
         run: sleep ${{ steps.random.outputs.number }}
-      - name: Fail
+      - name: 😴 sleep 10 minutes (slow PR)
+        if: ${{ github.event_name == 'merge_group' && contains(steps.get_commit_message.outputs.commit_message, 'slow') }}
+        run: |
+          echo "Commit message contains 'slow' — sleeping for 10 minutes..."
+          sleep 600
+      - name: ✅ Pass (slow PR)
+        if: ${{ github.event_name == 'merge_group' && contains(steps.get_commit_message.outputs.commit_message, 'slow') }}
+        run: echo "Slow PR passed all checks!"
+      - name: ❌ Fail
         if: ${{ github.event_name == 'merge_group' && contains(steps.get_commit_message.outputs.commit_message, 'fail') }}
-        run: exit 1
+        run: |
+          echo "Commit message contains 'fail' — failing the build."
+          exit 1

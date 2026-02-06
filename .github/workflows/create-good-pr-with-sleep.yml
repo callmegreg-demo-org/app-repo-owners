@@ -1,4 +1,4 @@
-name: Action - Open Good PRs (with delay)
+name: Action - Open Slow PRs
 on:
   workflow_dispatch:
     inputs:
@@ -7,7 +7,6 @@ on:
         default: 2
         required: true
         type: number
-  merge_group:
 
 permissions: write-all
 
@@ -16,9 +15,6 @@ jobs:
     name: Get File Names
     runs-on: ubuntu-latest
     steps:
-      - name: Sleep for 10 minutes in merge queue
-        if: github.event_name == 'merge_group'
-        run: sleep 600
       - uses: actions/github-script@v6
         id: file_name
         with:
@@ -36,10 +32,8 @@ jobs:
       matrix:
         file_name: ${{ fromJSON(needs.file_name.outputs.file_name) }}
         file_content: ['Hello World!']
+        commit_message: ['slow']
     steps:
-    - name: Sleep for 10 minutes in merge queue
-      if: github.event_name == 'merge_group'
-      run: sleep 600
     - uses: actions/checkout@v6
     - id: create-pr
       uses: austenstone/merge-queue-demo/.github/actions/create-pr@main
@@ -47,3 +41,4 @@ jobs:
         file_name: ${{ matrix.file_name }}
         file_content: ${{ matrix.file_content }}
         token: ${{ secrets.PR_PAT }}
+        commit_message: ${{ matrix.commit_message }}
