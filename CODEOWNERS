@@ -1,2 +1,3 @@
-*.yml @appsec-team
-*.js @frontend-team
+* @callmegreg
+*.yml @callmegreg-demo-org/appsec-team
+*.js @callmegreg-demo-org/frontend-team
