@@ -1,4 +1,4 @@
-name: Action - Open Good PRs
+name: Action - Open Good PRs (with delay)
 on:
   workflow_dispatch:
     inputs:
