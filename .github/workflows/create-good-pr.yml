@@ -33,7 +33,7 @@ jobs:
         file_name: ${{ fromJSON(needs.file_name.outputs.file_name) }}
         file_content: ['Hello World!']
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
     - id: create-pr
       uses: austenstone/merge-queue-demo/.github/actions/create-pr@main
       with:
