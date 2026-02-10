@@ -1,3 +1,13 @@
+# Default fallback owner is @callmegreg
 * @callmegreg
-*.yml @callmegreg-demo-org/appsec-team
+
+# Anything in the .github directory is owned by the AppSec team
+.github/** @callmegreg-demo-org/appsec-team
+
+# Javascript and Vue files are owned by the frontend team
 *.js @callmegreg-demo-org/frontend-team
+*.vue @callmegreg-demo-org/frontend-team
+
+# Authentication files are owned by @gmohler213
+frontend/src/components/AuthorizationCallback.vue @gmohler213
+frontend/src/components/Login.vue @gmohler213
