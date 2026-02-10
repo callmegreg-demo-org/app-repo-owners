@@ -1,8 +1,8 @@
 # Default fallback owner is @callmegreg
 * @callmegreg
 
-# Anything in the .github directory is owned by the AppSec team
-.github/** @callmegreg-demo-org/appsec-team
+# Anything in the .github directory is owned by the AppSec team and/or the development leads
+.github/** @callmegreg-demo-org/appsec-team @callmegreg-demo-org/dev-leads
 
 # Javascript and Vue files are owned by the frontend team
 *.js @callmegreg-demo-org/frontend-team
