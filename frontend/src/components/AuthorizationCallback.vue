@@ -11,6 +11,7 @@ export default {
       return params.get('code')
     },
     hasCode() {
+      console.log("testing")
       const params = new URLSearchParams(window.location.search)
       return params.has('code')
     },
