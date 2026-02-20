@@ -29,6 +29,7 @@ export default {
   name: "Login",
   computed: {
     hasError() {
+      console.log("testing")
       const params = new URLSearchParams(window.location.search)
       return params.has('error')
     },
